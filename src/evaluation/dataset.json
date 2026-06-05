@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "category": "product",
+    "prompt": "Build a Simple Task Manager. Users can sign up, create tasks with a title, description, status (pending, completed), and priority (low, medium, high). Users can filter tasks by priority or status.",
+    "description": "Standard CRUD app with basic auth and filtering."
+  },
+  {
+    "id": 2,
+    "category": "product",
+    "prompt": "Create a blog platform where Authors can create posts with title, content, and tags. Readers can view posts and write comments. Authors should be able to edit and delete their own posts, while Readers cannot.",
+    "description": "Content platform with two distinct roles and permissions."
+  },
+  {
+    "id": 3,
+    "category": "product",
+    "prompt": "An E-commerce Product Inventory Manager. Admin users can add, edit, and delete products (name, SKU, price, stock quantity). Customer users can view products and place orders. Orders should have an order date and status.",
+    "description": "Inventory management with transactional order placement."
+  },
+  {
+    "id": 4,
+    "category": "product",
+    "prompt": "A Fitness Tracker system. Users can log workouts (type: cardio, strength; duration in minutes, calories burned, date) and track their daily water intake. They can view a list of all their historical logs.",
+    "description": "Log-based personal health tracking system."
+  },
+  {
+    "id": 5,
+    "category": "product",
+    "prompt": "A Book Club portal. Members can list books (title, author, ISBN) and write reviews (1 to 5 stars, review text). Admin users can create discussion threads and moderate reviews.",
+    "description": "Community review site with admin oversight rules."
+  },
+  {
+    "id": 6,
+    "category": "product",
+    "prompt": "A Help Desk Ticket System. Customers can create support tickets (subject, description, priority). Support Agents can view tickets, change ticket status (open, in-progress, resolved), and write comments/replies.",
+    "description": "Ticket tracking pipeline with customer/agent workflows."
+  },
+  {
+    "id": 7,
+    "category": "product",
+    "prompt": "A Recipe Box application. Home cooks can upload recipes (title, ingredients list, instructions, cooking time). Users can search recipes by cooking time or ingredients, and bookmark recipes.",
+    "description": "Content collection and search indexing."
+  },
+  {
+    "id": 8,
+    "category": "product",
+    "prompt": "A Meeting Room Booking System. Employees can view available rooms (name, capacity) and book them for specific date/time slots. Employees should be able to cancel their own bookings.",
+    "description": "Resource scheduling with date/time collision potential."
+  },
+  {
+    "id": 9,
+    "category": "product",
+    "prompt": "A Car Rental Dashboard. Customers can view available cars (make, model, daily rate) and reserve them. Rental Agents can check cars in and out, updating the availability status.",
+    "description": "Booking and asset availability tracking."
+  },
+  {
+    "id": 10,
+    "category": "product",
+    "prompt": "A Student Gradebook. Teachers can add students and input grades for assignments (score, max score, date). Students can log in to view their own grades but cannot modify them.",
+    "description": "Academic tracking with student/teacher separation."
+  },
+  {
+    "id": 11,
+    "category": "edge_case",
+    "prompt": "Build an app but there is no database. Users just view a landing page with a navbar and a pricing table.",
+    "description": "Zero database system; tests if DB schema can be empty or stubbed gracefully."
+  },
+  {
+    "id": 12,
+    "category": "edge_case",
+    "prompt": "A secure system where all routes are public and anyone can change anything, but also there are Admin and User roles.",
+    "description": "Contradictory authorization requirements; tests conflict resolution."
+  },
+  {
+    "id": 13,
+    "category": "edge_case",
+    "prompt": "An API with no routes. Just a database schema for users and projects.",
+    "description": "No API endpoints; tests if API config can be empty or generated correctly."
+  },
+  {
+    "id": 14,
+    "category": "edge_case",
+    "prompt": "Make a cool app for my store.",
+    "description": "Extremely vague requirements; tests if agents make sound, standard e-commerce assumptions."
+  },
+  {
+    "id": 15,
+    "category": "edge_case",
+    "prompt": "A system where a Post belongs to a User, and a User belongs to a Post. Make sure both have foreign keys to each other.",
+    "description": "Circular dependency database schema; tests if the DB compiler/test runner detects and resolves circular dependencies."
+  },
+  {
+    "id": 16,
+    "category": "edge_case",
+    "prompt": "A system where all UI components bind to an API path '/api/nonexistent' which does not exist in the routes.",
+    "description": "Intentional cross-layer inconsistency; tests if pipeline detects and repairs it using the repair agent."
+  },
+  {
+    "id": 17,
+    "category": "edge_case",
+    "prompt": "A login endpoint that accepts user credentials and returns a token, but there is no user table in the database.",
+    "description": "Missing entity dependency; tests if pipeline resolves missing tables referenced in API."
+  },
+  {
+    "id": 18,
+    "category": "edge_case",
+    "prompt": "An application for tracking space rockets with a complex hierarchy where launchpads contain rockets, rockets contain thrusters, thrusters contain valves, and valves contain seals.",
+    "description": "Deep database schema hierarchy; tests schema generator scalability."
+  },
+  {
+    "id": 19,
+    "category": "edge_case",
+    "prompt": "A chat application that is read-only. No one, not even admins, can create messages. They can only view existing chat history.",
+    "description": "Read-only application; tests if agents drop default write/mutation endpoints."
+  },
+  {
+    "id": 20,
+    "category": "edge_case",
+    "prompt": "Create an application. Just that, no other details.",
+    "description": "Minimal possible input; tests default fallback system compilation."
+  }
+]

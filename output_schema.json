@@ -1,0 +1,796 @@
+{
+  "system_name": "LoginFormSystem",
+  "db": {
+    "tables": [
+      {
+        "name": "users",
+        "description": "Stores user credentials and metadata.",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique user identifier",
+            "constraints": [
+              "Primary Key",
+              "Not Null"
+            ],
+            "default": "gen_random_uuid()"
+          },
+          {
+            "name": "username",
+            "type": "string",
+            "description": "Unique username for login",
+            "constraints": [
+              "Unique",
+              "Not Null"
+            ],
+            "case_sensitive": false,
+            "max_length": 50
+          },
+          {
+            "name": "password_hash",
+            "type": "string",
+            "description": "Hashed password (bcrypt/Argon2)",
+            "constraints": [
+              "Not Null"
+            ],
+            "max_length": 255
+          },
+          {
+            "name": "email",
+            "type": "string",
+            "description": "User email (optional)",
+            "constraints": [
+              "Unique"
+            ],
+            "max_length": 255
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "description": "User role (guest, user, admin)",
+            "constraints": [
+              "Not Null"
+            ],
+            "default": "user",
+            "max_length": 20
+          },
+          {
+            "name": "is_active",
+            "type": "boolean",
+            "description": "Account status",
+            "constraints": [
+              "Not Null"
+            ],
+            "default": true
+          },
+          {
+            "name": "last_login",
+            "type": "datetime",
+            "description": "Last successful login timestamp"
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "description": "Timestamp of user creation",
+            "constraints": [
+              "Not Null"
+            ],
+            "default": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "description": "Timestamp of last update",
+            "constraints": [
+              "Not Null"
+            ],
+            "default": "CURRENT_TIMESTAMP"
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_users_username",
+            "fields": [
+              "username"
+            ],
+            "type": "UNIQUE"
+          }
+        ]
+      },
+      {
+        "name": "sessions",
+        "description": "Stores active user sessions (if using server-side sessions).",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique session identifier",
+            "constraints": [
+              "Primary Key",
+              "Not Null"
+            ],
+            "default": "gen_random_uuid()"
+          },
+          {
+            "name": "user_id",
+            "type": "string",
+            "description": "Reference to the user",
+            "constraints": [
+              "Foreign Key (users.id)",
+              "Not Null"
+            ]
+          },
+          {
+            "name": "token",
+            "type": "string",
+            "description": "Session token (JWT or random string)",
+            "constraints": [
+              "Not Null",
+              "Unique"
+            ],
+            "max_length": 255
+          },
+          {
+            "name": "ip_address",
+            "type": "string",
+            "description": "IP address of the client",
+            "max_length": 45
+          },
+          {
+            "name": "user_agent",
+            "type": "text",
+            "description": "Browser/device info"
+          },
+          {
+            "name": "expires_at",
+            "type": "datetime",
+            "description": "Expiration time of the session",
+            "constraints": [
+              "Not Null"
+            ]
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "description": "Timestamp of session creation",
+            "constraints": [
+              "Not Null"
+            ],
+            "default": "CURRENT_TIMESTAMP"
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_sessions_token",
+            "fields": [
+              "token"
+            ],
+            "type": "UNIQUE"
+          },
+          {
+            "name": "idx_sessions_user_id",
+            "fields": [
+              "user_id"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "login_attempts",
+        "description": "Tracks failed login attempts for security (optional).",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique attempt identifier",
+            "constraints": [
+              "Primary Key",
+              "Not Null"
+            ],
+            "default": "gen_random_uuid()"
+          },
+          {
+            "name": "user_id",
+            "type": "string",
+            "description": "Reference to the user (if exists)",
+            "constraints": [
+              "Foreign Key (users.id)"
+            ]
+          },
+          {
+            "name": "username",
+            "type": "string",
+            "description": "Username attempted",
+            "max_length": 50
+          },
+          {
+            "name": "ip_address",
+            "type": "string",
+            "description": "IP address of the client",
+            "constraints": [
+              "Not Null"
+            ],
+            "max_length": 45
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "description": "success or failed",
+            "constraints": [
+              "Not Null"
+            ],
+            "max_length": 20
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "description": "Timestamp of the attempt",
+            "constraints": [
+              "Not Null"
+            ],
+            "default": "CURRENT_TIMESTAMP"
+          }
+        ],
+        "indexes": [
+          {
+            "name": "idx_login_attempts_ip_username",
+            "fields": [
+              "ip_address",
+              "username"
+            ]
+          },
+          {
+            "name": "idx_login_attempts_created_at",
+            "fields": [
+              "created_at"
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from_table": "sessions",
+        "from_field": "user_id",
+        "to_table": "users",
+        "to_field": "id",
+        "type": "one_to_many"
+      },
+      {
+        "from_table": "login_attempts",
+        "from_field": "user_id",
+        "to_table": "users",
+        "to_field": "id",
+        "type": "many_to_one"
+      }
+    ],
+    "config": {
+      "type": "relational",
+      "engine": "PostgreSQL",
+      "charset": "utf8mb4",
+      "collation": "utf8mb4_unicode_ci"
+    }
+  },
+  "api": {
+    "base_path": "/api",
+    "version": "v1",
+    "routes": [
+      {
+        "path": "/auth/login",
+        "method": "POST",
+        "description": "Authenticates a user and returns a session token.",
+        "authentication": "none",
+        "rate_limiting": {
+          "max_attempts": 5,
+          "window_seconds": 60,
+          "key": "ip_address"
+        },
+        "request": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string",
+                "description": "Username for login",
+                "minLength": 3,
+                "maxLength": 50,
+                "pattern": "^[a-zA-Z0-9_-]+$"
+              },
+              "password": {
+                "type": "string",
+                "description": "Password for login",
+                "minLength": 8
+              }
+            },
+            "required": [
+              "username",
+              "password"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "responses": [
+          {
+            "status": 200,
+            "description": "Successful login",
+            "body": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "JWT or session token"
+                },
+                "expires_in": {
+                  "type": "integer",
+                  "description": "Token expiration time in seconds"
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "User ID"
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username"
+                    },
+                    "role": {
+                      "type": "string",
+                      "description": "User role",
+                      "enum": [
+                        "guest",
+                        "user",
+                        "admin"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "username",
+                    "role"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "token",
+                "expires_in",
+                "user"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "status": 400,
+            "description": "Invalid input",
+            "body": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Error message"
+                },
+                "details": {
+                  "type": "object",
+                  "description": "Validation error details",
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "description": "Username validation error"
+                    },
+                    "password": {
+                      "type": "string",
+                      "description": "Password validation error"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "status": 401,
+            "description": "Invalid credentials",
+            "body": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Error message"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "status": 429,
+            "description": "Rate limit exceeded",
+            "body": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Error message"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ]
+      },
+      {
+        "path": "/auth/logout",
+        "method": "POST",
+        "description": "Invalidates the current session token.",
+        "authentication": {
+          "type": "bearer",
+          "token_location": "header"
+        },
+        "responses": [
+          {
+            "status": 200,
+            "description": "Successful logout",
+            "body": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Success message"
+                }
+              },
+              "required": [
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "status": 401,
+            "description": "Invalid or expired token",
+            "body": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Error message"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ]
+      },
+      {
+        "path": "/auth/me",
+        "method": "GET",
+        "description": "Returns the authenticated user's details.",
+        "authentication": {
+          "type": "bearer",
+          "token_location": "header"
+        },
+        "responses": [
+          {
+            "status": 200,
+            "description": "User details",
+            "body": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "User ID"
+                },
+                "username": {
+                  "type": "string",
+                  "description": "Username"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "description": "User email (optional)"
+                },
+                "role": {
+                  "type": "string",
+                  "description": "User role",
+                  "enum": [
+                    "guest",
+                    "user",
+                    "admin"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "username",
+                "role"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "status": 401,
+            "description": "Invalid or expired token",
+            "body": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Error message"
+                }
+              },
+              "required": [
+                "error"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ]
+      }
+    ],
+    "security": {
+      "https": true,
+      "cors": {
+        "allowed_origins": [
+          "*"
+        ],
+        "allowed_methods": [
+          "GET",
+          "POST",
+          "OPTIONS"
+        ],
+        "allowed_headers": [
+          "Content-Type",
+          "Authorization"
+        ]
+      },
+      "jwt": {
+        "secret": "your_jwt_secret_key",
+        "algorithm": "HS256",
+        "expires_in": "1h"
+      }
+    },
+    "config": {
+      "framework": "Express.js",
+      "rate_limiting": {
+        "enabled": true,
+        "store": "memory"
+      }
+    }
+  },
+  "ui": {
+    "components": [
+      {
+        "id": "LoginForm",
+        "name": "LoginForm",
+        "type": "form",
+        "description": "Form for user authentication.",
+        "fields": [
+          {
+            "name": "username",
+            "type": "text",
+            "label": "Username",
+            "placeholder": "Enter username",
+            "validation": {
+              "required": true,
+              "min_length": 3,
+              "max_length": 50,
+              "pattern": "^[a-zA-Z0-9_-]+$",
+              "message": "Username must be 3-50 characters and can only contain letters, numbers, underscores, and hyphens."
+            }
+          },
+          {
+            "name": "password",
+            "type": "password",
+            "label": "Password",
+            "placeholder": "Enter password",
+            "validation": {
+              "required": true,
+              "min_length": 8,
+              "message": "Password must be at least 8 characters."
+            }
+          }
+        ],
+        "actions": [
+          {
+            "type": "submit",
+            "label": "Login",
+            "api_endpoint": "/api/auth/login",
+            "method": "POST",
+            "success_redirect": "/dashboard",
+            "states": {
+              "loading": {
+                "disabled": true,
+                "spinner": true
+              },
+              "error": {
+                "message": "Invalid username or password"
+              }
+            }
+          }
+        ],
+        "links": [
+          {
+            "label": "Forgot Password?",
+            "path": "/forgot-password",
+            "type": "link"
+          },
+          {
+            "label": "Sign Up",
+            "path": "/register",
+            "type": "link"
+          }
+        ]
+      }
+    ],
+    "pages": [
+      {
+        "path": "/login",
+        "name": "LoginPage",
+        "description": "Login page with username and password fields.",
+        "components": [
+          "LoginForm"
+        ],
+        "states": [
+          {
+            "name": "initial",
+            "description": "Empty form, no errors."
+          },
+          {
+            "name": "loading",
+            "description": "Form submitted, waiting for API response.",
+            "updates": {
+              "inputs": {
+                "disabled": true
+              },
+              "submit_button": {
+                "disabled": true,
+                "spinner": true
+              },
+              "error_message": {
+                "visible": false
+              }
+            }
+          },
+          {
+            "name": "success",
+            "description": "Login successful, redirect to dashboard.",
+            "actions": [
+              {
+                "type": "store_token",
+                "storage": "localStorage",
+                "key": "token"
+              },
+              {
+                "type": "redirect",
+                "path": "/dashboard"
+              }
+            ]
+          },
+          {
+            "name": "error",
+            "description": "Login failed (invalid credentials, rate limit, etc.).",
+            "updates": {
+              "error_message": {
+                "visible": true,
+                "text": "Invalid username or password"
+              },
+              "inputs": {
+                "disabled": false
+              },
+              "password_field": {
+                "value": ""
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "config": {
+      "framework": "React",
+      "form_library": "React Hook Form",
+      "styling": "TailwindCSS",
+      "routing": "React Router"
+    }
+  },
+  "auth": {
+    "roles": [
+      "guest",
+      "user",
+      "admin"
+    ],
+    "role_permissions": {
+      "guest": {
+        "ui": {
+          "accessible_pages": [
+            "/login"
+          ]
+        },
+        "api": {
+          "allowed_endpoints": [
+            "/api/auth/login"
+          ]
+        }
+      },
+      "user": {
+        "ui": {
+          "accessible_pages": [
+            "/dashboard",
+            "/profile"
+          ]
+        },
+        "api": {
+          "allowed_endpoints": [
+            "/api/auth/logout",
+            "/api/auth/me"
+          ]
+        }
+      },
+      "admin": {
+        "ui": {
+          "accessible_pages": [
+            "/admin",
+            "/dashboard",
+            "/profile"
+          ]
+        },
+        "api": {
+          "allowed_endpoints": [
+            "/api/auth/logout",
+            "/api/auth/me",
+            "/api/users"
+          ]
+        }
+      }
+    },
+    "providers": [
+      {
+        "type": "local",
+        "description": "Username and password authentication.",
+        "config": {
+          "password_hashing": {
+            "algorithm": "bcrypt",
+            "cost": 10
+          }
+        }
+      }
+    ],
+    "session": {
+      "type": "jwt",
+      "token_location": "header",
+      "token_prefix": "Bearer",
+      "expiration": "1h",
+      "storage": "localStorage"
+    },
+    "security": {
+      "rate_limiting": {
+        "login_attempts": {
+          "max_attempts": 5,
+          "window_seconds": 60
+        }
+      },
+      "password_policy": {
+        "min_length": 8,
+        "require_uppercase": false,
+        "require_lowercase": false,
+        "require_number": false,
+        "require_special_char": false
+      }
+    }
+  }
+}
